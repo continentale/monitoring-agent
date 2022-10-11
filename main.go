@@ -16,10 +16,28 @@ func main() {
 	paths.InitOSSpecific()
 	viper.ReadInConfig()
 
-	fmt.Println("sysctl", viper.GetString("sysPath"))
+	viper.WatchConfig()
 
 	r := gin.Default()
-	r.GET("/api/mem", api.GetMemory)
 
-	r.Run("127.0.0.1:10240")
+	v2 := r.Group("/api/v2")
+
+	v2.Use(api.AuthorizationV2)
+
+	v2.GET("mem", api.GetMemory)
+	v2.GET("procs", api.GetProcs)
+	v2.GET("disk", api.GetDisk)
+	v2.GET("load", api.GetLoad)
+	v2.GET("time", api.GetTime)
+	v2.GET("cpu", api.GetCPU)
+
+	// TODO implement this functions
+	// v2.GET("file", api.ShowFile)
+	// v2.GET("exec", api.ExecCommand)
+
+	if viper.GetString("server.protocol") == "https" {
+		r.RunTLS(fmt.Sprintf("%s:%d", viper.GetString("server.address"), viper.GetInt("server.port")), viper.GetString("server.certificate"), viper.GetString("server.key"))
+	} else {
+		r.Run(fmt.Sprintf("%s:%d", viper.GetString("server.address"), viper.GetInt("server.port")))
+	}
 }

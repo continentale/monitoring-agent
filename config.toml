@@ -1,1 +1,45 @@
-PORT: 8080
+[server]
+# protocol for the webserver. Supported are http or https
+protocol = "http"
+
+# if https is enabled that are the paths to the certificates
+certificate = "certificates/cert.crt"
+key = "certificates/priv.key"
+
+# use a secret in the client to get data
+secret = "superSecretPassword"
+useSecret = false
+
+# set the port for the webserver
+port = 10240
+# sets the address for the webserver to listen on
+address = ""
+
+[global]
+timeStringFormat = "Mon Jan _2 15:04:05 MST 2006"
+
+
+[mem]
+enabled = true
+
+[procs]
+enabled = true
+
+[disk]
+enabled = true
+
+[load]
+enabled = true
+
+[time]
+enabled = true
+
+[cpu]
+perCPU = false
+enabled = true
+
+[file]
+enabled = true
+
+[exec]
+enabled = true
