@@ -8,7 +8,7 @@ import (
 
 func InitCommon() {
 	viper.SetDefault("server.address", "")
-	viper.SetDefault("server.port", 10240)
+	viper.SetDefault("server.port", 20480)
 	viper.SetDefault("server.protocol", "http")
 	viper.SetDefault("server.certificate", "certificates/cert.crt")
 	viper.SetDefault("server.key", "certificates/priv.key")
@@ -26,9 +26,11 @@ func InitCommon() {
 
 	// procs
 	viper.SetDefault("procs.enabled", true)
+	viper.SetDefault("procs.filter", ".")
 
-	// disk
-	viper.SetDefault("disk.enabled", true)
+	// disks
+	viper.SetDefault("disks.enabled", true)
+	viper.SetDefault("disks.filter", ".")
 
 	// load
 	viper.SetDefault("load.enabled", true)
@@ -39,6 +41,7 @@ func InitCommon() {
 	// cpu
 	viper.SetDefault("cpu.enabled", true)
 	viper.SetDefault("cpu.perCPU", true)
+	viper.SetDefault("cpu.filter", ".")
 
 	// file
 	viper.SetDefault("file.enabled", true)

@@ -1,8 +1,15 @@
 package api
 
 import (
+	"encoding/json"
+	"errors"
+	"io/ioutil"
 	"net/http"
+	"os"
+	"os/exec"
 	"strconv"
+	"strings"
+	"syscall"
 	"time"
 
 	"github.com/continentale/monitoring-agent/types"
@@ -19,23 +26,31 @@ import (
 func GetMemory(c *gin.Context) {
 	mem, _ := mem.VirtualMemory()
 
+	c.Header("Content-Type", "application/json")
 	c.JSON(http.StatusOK, mem)
 }
 
 func GetProcs(c *gin.Context) {
 	procs, _ := process.Processes()
 
-	result := make([]types.Procs, len(procs))
+	results := make([]types.Procs, len(procs))
 
 	for i, p := range procs {
-		result[i].Name, _ = p.Name()
-		result[i].MemoryPercent, _ = p.MemoryPercent()
-		result[i].Exe, _ = p.Exe()
-		result[i].CPUPercent, _ = p.CPUPercent()
-		result[i].Status, _ = p.Status()
+		results[i].Name, _ = p.Name()
+		results[i].MemoryPercent, _ = p.MemoryPercent()
+		results[i].Exe, _ = p.Exe()
+		results[i].CPUPercent, _ = p.CPUPercent()
+		results[i].Status, _ = p.Status()
 	}
 
-	c.JSON(http.StatusOK, result)
+	jsonData, _ := json.Marshal(results)
+	filter := c.DefaultQuery("filter", viper.GetString("procs.filter"))
+
+	if filter != "." { // . is the default filter which means no filter at all
+		jsonData = types.ApplyFilter(jsonData, filter, "procs")
+	}
+
+	c.Data(http.StatusOK, "application/json", jsonData)
 }
 
 func GetDisk(c *gin.Context) {
@@ -47,12 +62,22 @@ func GetDisk(c *gin.Context) {
 		results[i].Details = d
 		results[i].Usage, _ = disk.Usage(d.Mountpoint)
 	}
-	c.JSON(http.StatusOK, results)
+
+	jsonData, _ := json.Marshal(results)
+
+	filter := c.DefaultQuery("filter", viper.GetString("disks.filter"))
+
+	if filter != "." { // . is the default filter which means no filter at all
+		jsonData = types.ApplyFilter(jsonData, filter, "disks")
+	}
+
+	c.Data(http.StatusOK, "application/json", jsonData)
 }
 
 func GetLoad(c *gin.Context) {
 	load, _ := load.Avg()
 
+	c.Header("Content-Type", "application/json")
 	c.JSON(http.StatusOK, load)
 }
 
@@ -63,21 +88,93 @@ func GetTime(c *gin.Context) {
 
 	result.Timestamp = timeNow.Unix()
 	result.Formatted = timeNow.Format(viper.GetString("timeStringFormat"))
+	c.Header("Content-Type", "application/json")
 	c.JSON(http.StatusOK, result)
 }
 
 func GetCPU(c *gin.Context) {
 	perCPU, _ := strconv.ParseBool(c.DefaultQuery("perCPU", viper.GetString("cpu.perCPU")))
 	cpus, _ := cpu.Times(perCPU)
+	c.Header("Content-Type", "application/json")
 	c.JSON(http.StatusOK, cpus)
 }
 
 func ShowFile(c *gin.Context) {
-	load, _ := load.Avg()
+	name := c.DefaultQuery("name", "")
 
-	c.JSON(http.StatusOK, load)
+	if name == "" {
+		c.AbortWithError(http.StatusBadRequest, errors.New("name not defined"))
+	}
+
+	filePath := viper.GetString("file.entries." + name)
+
+	if filePath == "" {
+
+		filePath = viper.GetString("file.entries." + name + ".path")
+
+		if filePath == "" {
+			c.AbortWithError(http.StatusNotFound, errors.New("command not defined"))
+		}
+	}
+
+	if viper.GetBool("file.entries." + name + ".contentOnly") {
+		fileContent, _ := ioutil.ReadFile(filePath)
+		c.Data(http.StatusOK, "text/html; charset=UTF-8", fileContent)
+	} else {
+		file, _ := os.OpenFile(filePath, os.O_RDONLY, 0644)
+		stat, _ := file.Stat()
+
+		fileContent, _ := ioutil.ReadFile(filePath)
+
+		customFile := types.File{
+			Path:    filePath,
+			IsDir:   stat.IsDir(),
+			ModTime: stat.ModTime().Unix(),
+			Mode:    stat.Mode().String(),
+			Name:    stat.Name(),
+			Size:    stat.Size(),
+			Content: string(fileContent),
+		}
+
+		c.Header("Content-Type", "application/json")
+		c.JSON(http.StatusOK, customFile)
+	}
 }
 
 func ExecCommand(c *gin.Context) {
+	var waitStatus syscall.WaitStatus
+	var check types.Check
 
+	name := c.DefaultQuery("name", "")
+
+	if name == "" {
+		c.AbortWithError(http.StatusBadRequest, errors.New("name not defined"))
+	}
+
+	commandPath := viper.GetString("exec.entries." + name)
+
+	if commandPath == "" {
+		c.AbortWithError(http.StatusNotFound, errors.New("command not defined"))
+	}
+
+	cmd := exec.Command(viper.GetString("exec.shell"), strings.Fields(commandPath)...)
+
+	out, err := cmd.CombinedOutput()
+
+	if err != nil {
+		if exitError, ok := err.(*exec.ExitError); ok {
+			waitStatus = exitError.Sys().(syscall.WaitStatus)
+		} else {
+			waitStatus = exitError.Sys().(syscall.WaitStatus)
+		}
+	} else {
+		waitStatus = cmd.ProcessState.Sys().(syscall.WaitStatus)
+	}
+
+	outString := string(out)
+	check.Output = outString
+	check.ExitCode = waitStatus.ExitStatus()
+
+	c.Header("Content-Type", "application/json")
+	c.JSON(http.StatusOK, check)
 }

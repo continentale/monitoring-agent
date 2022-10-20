@@ -26,14 +26,13 @@ func main() {
 
 	v2.GET("mem", api.GetMemory)
 	v2.GET("procs", api.GetProcs)
-	v2.GET("disk", api.GetDisk)
+	v2.GET("disks", api.GetDisk)
 	v2.GET("load", api.GetLoad)
 	v2.GET("time", api.GetTime)
-	v2.GET("cpu", api.GetCPU)
+	v2.GET("cpus", api.GetCPU)
 
-	// TODO implement this functions
-	// v2.GET("file", api.ShowFile)
-	// v2.GET("exec", api.ExecCommand)
+	v2.GET("file", api.ShowFile)
+	v2.GET("exec", api.ExecCommand)
 
 	if viper.GetString("server.protocol") == "https" {
 		r.RunTLS(fmt.Sprintf("%s:%d", viper.GetString("server.address"), viper.GetInt("server.port")), viper.GetString("server.certificate"), viper.GetString("server.key"))

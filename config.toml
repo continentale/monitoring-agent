@@ -11,7 +11,7 @@ secret = "superSecretPassword"
 useSecret = false
 
 # set the port for the webserver
-port = 10240
+port = 20480
 # sets the address for the webserver to listen on
 address = ""
 
@@ -25,7 +25,7 @@ enabled = true
 [procs]
 enabled = true
 
-[disk]
+[disks]
 enabled = true
 
 [load]
@@ -40,6 +40,15 @@ enabled = true
 
 [file]
 enabled = true
-
+  [file.entries]
+  	fsTab = "/etc/fstab"
+    [file.entries.environment]
+    path = "/etc/environment"
+    contentOnly = true
+  
 [exec]
 enabled = true
+# shell = 
+  [exec.entries]
+  file_tester = "scripts/echo"
+
