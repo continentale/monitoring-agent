@@ -1,3 +1,14 @@
+/**
+ * @package   monitoring-agent
+ * @copyright monitoring-agent contributors
+ * @license   GNU Affero General Public License (https://www.gnu.org/licenses/agpl-3.0.de.html)
+ * @authors   https://github.com/continentale/monitoring-agent/graphs/contributors
+ * @todo lots of documentation
+ *
+ *
+ * Monitoring Agent with REST-API for Linux, Windows and osX
+ */
+
 package main
 
 import (
