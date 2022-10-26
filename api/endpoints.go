@@ -93,7 +93,7 @@ func GetTime(c *gin.Context) {
 }
 
 func GetCPU(c *gin.Context) {
-	perCPU, _ := strconv.ParseBool(c.DefaultQuery("perCPU", viper.GetString("cpu.perCPU")))
+	perCPU, _ := strconv.ParseBool(c.DefaultQuery("perCPU", viper.GetString("cpus.perCPU")))
 	cpus, _ := cpu.Times(perCPU)
 	c.Header("Content-Type", "application/json")
 	c.JSON(http.StatusOK, cpus)

@@ -38,10 +38,10 @@ func InitCommon() {
 	// time
 	viper.SetDefault("time.enabled", true)
 
-	// cpu
-	viper.SetDefault("cpu.enabled", true)
-	viper.SetDefault("cpu.perCPU", true)
-	viper.SetDefault("cpu.filter", ".")
+	// cpus
+	viper.SetDefault("cpus.enabled", true)
+	viper.SetDefault("cpus.perCPU", true)
+	viper.SetDefault("cpus.filter", ".")
 
 	// file
 	viper.SetDefault("file.enabled", true)
