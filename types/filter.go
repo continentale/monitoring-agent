@@ -2,7 +2,6 @@ package types
 
 import (
 	"encoding/json"
-	"fmt"
 	"regexp"
 	"strings"
 
@@ -12,9 +11,10 @@ import (
 type FilterEntryOperator string
 
 const (
-	FILTER_ENTRY_EXACT FilterEntryOperator = ":"
-	FILTER_ENTRY_REGEX FilterEntryOperator = ":*"
-	FILTER_ENTRY_NOT   FilterEntryOperator = ":!"
+	FILTER_ENTRY_EXACT        FilterEntryOperator = ":"
+	FILTER_ENTRY_REGEX        FilterEntryOperator = ":*"
+	FILTER_ENTRY_NEGATE_REGEX FilterEntryOperator = ":#"
+	FILTER_ENTRY_NOT          FilterEntryOperator = ":!"
 )
 
 func ApplyFilter(data []byte, filter string, endpoint string) []byte {
@@ -34,11 +34,18 @@ func ApplyFilter(data []byte, filter string, endpoint string) []byte {
 				if pattern.MatchString(value.Get(fieldName).String()) {
 					parseEndpoint(endpoint, value.Raw, &result)
 				}
+			} else if strings.Contains(filterPart, string(FILTER_ENTRY_NEGATE_REGEX)) {
+				fieldName := filterPart[:strings.IndexAny(filterPart, string(FILTER_ENTRY_NEGATE_REGEX))]
+				searchValue := filterPart[strings.IndexAny(filterPart, string(FILTER_ENTRY_NEGATE_REGEX))+2:]
+				pattern := regexp.MustCompile(searchValue)
+
+				if !pattern.MatchString(value.Get(fieldName).String()) {
+					parseEndpoint(endpoint, value.Raw, &result)
+				}
 			} else if strings.Contains(filterPart, string(FILTER_ENTRY_NOT)) {
 
 				fieldName := filterPart[:strings.IndexAny(filterPart, string(FILTER_ENTRY_NOT))]
 				searchValue := filterPart[strings.IndexAny(filterPart, string(FILTER_ENTRY_NOT))+2:]
-				fmt.Println("NOT", fieldName, searchValue)
 				if value.Get(fieldName).String() != searchValue {
 					parseEndpoint(endpoint, value.Raw, &result)
 				}
