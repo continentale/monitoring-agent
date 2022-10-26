@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/json"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -13,15 +14,8 @@ type FilterEntryOperator string
 const (
 	FILTER_ENTRY_EXACT FilterEntryOperator = ":"
 	FILTER_ENTRY_REGEX FilterEntryOperator = ":*"
+	FILTER_ENTRY_NOT   FilterEntryOperator = ":!"
 )
-
-type FilterEntry struct {
-	Operator FilterEntryOperator
-	Value    string
-}
-
-type Filter struct {
-}
 
 func ApplyFilter(data []byte, filter string, endpoint string) []byte {
 	filterParts := strings.Split(filter, "||")
@@ -40,7 +34,15 @@ func ApplyFilter(data []byte, filter string, endpoint string) []byte {
 				if pattern.MatchString(value.Get(fieldName).String()) {
 					parseEndpoint(endpoint, value.Raw, &result)
 				}
-			} else if strings.Contains(filterPart, string(FILTER_ENTRY_EXACT)) {
+			} else if strings.Contains(filterPart, string(FILTER_ENTRY_NOT)) {
+
+				fieldName := filterPart[:strings.IndexAny(filterPart, string(FILTER_ENTRY_NOT))]
+				searchValue := filterPart[strings.IndexAny(filterPart, string(FILTER_ENTRY_NOT))+2:]
+				fmt.Println("NOT", fieldName, searchValue)
+				if value.Get(fieldName).String() != searchValue {
+					parseEndpoint(endpoint, value.Raw, &result)
+				}
+			} else { // match exact, but must be stand at the bottom
 				fieldName := filterPart[:strings.IndexAny(filterPart, string(FILTER_ENTRY_EXACT))]
 				searchValue := filterPart[strings.IndexAny(filterPart, string(FILTER_ENTRY_EXACT))+1:]
 
