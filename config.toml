@@ -34,7 +34,7 @@ enabled = true
 [time]
 enabled = true
 
-[cpu]
+[cpus]
 perCPU = false
 enabled = true
 
