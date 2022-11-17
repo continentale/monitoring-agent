@@ -15,7 +15,7 @@ func InitOSSpecific() {
 	viper.SetDefault("rootfsPath", "/e")
 	viper.SetDefault("udevDataPath", "/run/udev/data")
 
-	viper.SetDefault("exec.shell", "bash")
+	viper.SetDefault("exec.shell", "/bin/bash")
 }
 
 func ProcFilePath(name string) string {
