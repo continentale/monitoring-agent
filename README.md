@@ -269,12 +269,12 @@ next you define your entries with two possible formats
 
 ```toml
 # use this format if you just want to specify the path
-the FILE_NAME is just the name for the agent and must not match the real file name
+# the FILE_NAME is just the name for the agent and must not match the real file name
 FILE_NAME = path
 
 # the other option is to provide the name directly and pass an path value
 
-full example:
+# full example:
 [file]
 enabled = true
   [file.entries]
@@ -375,7 +375,7 @@ enabled = true
 # turns of the per cpu view and summarizes all cpus in one output
 # can configured in the api call as http-get parameter
 perCPU = false
-´
+
 # configure the file endpoint
 [file]
 # disable or enable the endpoint
