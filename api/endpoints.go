@@ -87,7 +87,7 @@ func GetTime(c *gin.Context) {
 	timeNow := time.Now()
 
 	result.Timestamp = timeNow.Unix()
-	result.Formatted = timeNow.Format(viper.GetString("timeStringFormat"))
+	result.Formatted = timeNow.Format(viper.GetString("global.timeStringFormat"))
 	c.Header("Content-Type", "application/json")
 	c.JSON(http.StatusOK, result)
 }
