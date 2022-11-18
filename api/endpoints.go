@@ -95,8 +95,17 @@ func GetTime(c *gin.Context) {
 func GetCPU(c *gin.Context) {
 	perCPU, _ := strconv.ParseBool(c.DefaultQuery("perCPU", viper.GetString("cpus.perCPU")))
 	cpus, _ := cpu.Times(perCPU)
+
+	usagesPercent, _ := cpu.Percent(time.Second, perCPU)
+
+	result := make([]types.CPUS, len(cpus))
+
+	for i := range result {
+		result[i].TimesStat = cpus[i]
+		result[i].Usage = usagesPercent[i]
+	}
 	c.Header("Content-Type", "application/json")
-	c.JSON(http.StatusOK, cpus)
+	c.JSON(http.StatusOK, result)
 }
 
 func ShowFile(c *gin.Context) {
