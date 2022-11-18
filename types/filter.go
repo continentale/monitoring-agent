@@ -30,32 +30,64 @@ func ApplyFilter(data []byte, filter string, endpoint string) []byte {
 				fieldName := filterPart[:strings.IndexAny(filterPart, string(FILTER_ENTRY_REGEX))]
 				searchValue := filterPart[strings.IndexAny(filterPart, string(FILTER_ENTRY_REGEX))+2:]
 				pattern := regexp.MustCompile(searchValue)
-
-				if pattern.MatchString(value.Get(fieldName).String()) {
-					parseEndpoint(endpoint, value.Raw, &result)
+				if value.Get(fieldName).IsArray() {
+					for _, v := range value.Get(fieldName).Array() {
+						if v.String() == searchValue {
+							parseEndpoint(endpoint, value.Raw, &result)
+						}
+					}
+				} else {
+					if pattern.MatchString(value.Get(fieldName).Raw) {
+						parseEndpoint(endpoint, value.Raw, &result)
+					}
 				}
 			} else if strings.Contains(filterPart, string(FILTER_ENTRY_NEGATE_REGEX)) {
 				fieldName := filterPart[:strings.IndexAny(filterPart, string(FILTER_ENTRY_NEGATE_REGEX))]
 				searchValue := filterPart[strings.IndexAny(filterPart, string(FILTER_ENTRY_NEGATE_REGEX))+2:]
 				pattern := regexp.MustCompile(searchValue)
 
-				if !pattern.MatchString(value.Get(fieldName).String()) {
-					parseEndpoint(endpoint, value.Raw, &result)
+				if value.Get(fieldName).IsArray() {
+					for _, v := range value.Get(fieldName).Array() {
+						if v.String() == searchValue {
+							parseEndpoint(endpoint, value.Raw, &result)
+						}
+					}
+				} else {
+					if !pattern.MatchString(value.Get(fieldName).String()) {
+						parseEndpoint(endpoint, value.Raw, &result)
+					}
 				}
 			} else if strings.Contains(filterPart, string(FILTER_ENTRY_NOT)) {
 
 				fieldName := filterPart[:strings.IndexAny(filterPart, string(FILTER_ENTRY_NOT))]
 				searchValue := filterPart[strings.IndexAny(filterPart, string(FILTER_ENTRY_NOT))+2:]
-				if value.Get(fieldName).String() != searchValue {
-					parseEndpoint(endpoint, value.Raw, &result)
+				if value.Get(fieldName).IsArray() {
+					for _, v := range value.Get(fieldName).Array() {
+						if v.String() == searchValue {
+							parseEndpoint(endpoint, value.Raw, &result)
+						}
+					}
+				} else {
+					if value.Get(fieldName).String() != searchValue {
+						parseEndpoint(endpoint, value.Raw, &result)
+					}
 				}
 			} else { // match exact, but must be stand at the bottom
 				fieldName := filterPart[:strings.IndexAny(filterPart, string(FILTER_ENTRY_EXACT))]
 				searchValue := filterPart[strings.IndexAny(filterPart, string(FILTER_ENTRY_EXACT))+1:]
 
-				if value.Get(fieldName).String() == searchValue {
-					parseEndpoint(endpoint, value.Raw, &result)
+				if value.Get(fieldName).IsArray() {
+					for _, v := range value.Get(fieldName).Array() {
+						if v.String() == searchValue {
+							parseEndpoint(endpoint, value.Raw, &result)
+						}
+					}
+				} else {
+					if value.Get(fieldName).String() == searchValue {
+						parseEndpoint(endpoint, value.Raw, &result)
+					}
 				}
+
 			}
 		}
 	}
