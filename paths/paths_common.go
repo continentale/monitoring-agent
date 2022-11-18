@@ -48,5 +48,4 @@ func InitCommon() {
 
 	// exec
 	viper.SetDefault("exec.enabled", true)
-
 }

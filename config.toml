@@ -15,11 +15,13 @@ port = 20480
 # sets the address for the webserver to listen on
 address = ""
 
+# under global there are the default values for all endpoints
 [global]
 timeStringFormat = "Mon Jan _2 15:04:05 MST 2006"
 
-
+# configure the mem endpoint
 [mem]
+# disable or enable the endpoint
 enabled = true
 
 [procs]
@@ -34,7 +36,7 @@ enabled = true
 [time]
 enabled = true
 
-[cpu]
+[cpus]
 perCPU = false
 enabled = true
 
@@ -42,13 +44,17 @@ enabled = true
 enabled = true
   [file.entries]
   	fsTab = "/etc/fstab"
+    
     [file.entries.environment]
     path = "/etc/environment"
     contentOnly = true
   
 [exec]
 enabled = true
-# shell = 
+shell = "/bin/bash"
   [exec.entries]
-  file_tester = "scripts/echo"
+    file_tester = "-c ./scripts/echo"
+    [exec.entries.test]
+    shell = "/usr/bin/python3"
+    path = "./scripts/echo"
 

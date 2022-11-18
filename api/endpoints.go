@@ -87,7 +87,7 @@ func GetTime(c *gin.Context) {
 	timeNow := time.Now()
 
 	result.Timestamp = timeNow.Unix()
-	result.Formatted = timeNow.Format(viper.GetString("timeStringFormat"))
+	result.Formatted = timeNow.Format(viper.GetString("global.timeStringFormat"))
 	c.Header("Content-Type", "application/json")
 	c.JSON(http.StatusOK, result)
 }
@@ -163,10 +163,19 @@ func ExecCommand(c *gin.Context) {
 	commandPath := viper.GetString("exec.entries." + name)
 
 	if commandPath == "" {
-		c.AbortWithError(http.StatusNotFound, errors.New("command not defined"))
+		commandPath = viper.GetString("exec.entries." + name + ".path")
+		if commandPath == "" {
+			c.AbortWithError(http.StatusNotFound, errors.New("command not defined"))
+		}
 	}
 
-	cmd := exec.Command(viper.GetString("exec.shell"), strings.Fields(commandPath)...)
+	path := viper.GetString("exec.entries." + name + ".shell")
+	if path == "" {
+		// the default is not overwritten
+		path = viper.GetString("exec.shell")
+	}
+
+	cmd := exec.Command(path, strings.Fields(commandPath)...)
 
 	out, err := cmd.CombinedOutput()
 
