@@ -23,7 +23,8 @@ func prepareDefaultPaths() {
 	// get home dir for config path location
 	dirname, err := os.UserHomeDir()
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("ERROR %v", err)
 	}
+
 	viper.AddConfigPath(dirname)
 }

@@ -19,9 +19,12 @@ address = ""
 [global]
 timeStringFormat = "Mon Jan _2 15:04:05 MST 2006"
 
-# configure the mem endpoint
-[mem]
+# configure the version endpoint
+[version]
 # disable or enable the endpoint
+enabled = true
+
+[mem]
 enabled = true
 
 [procs]
