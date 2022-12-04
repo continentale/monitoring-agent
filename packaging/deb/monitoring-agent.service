@@ -1,0 +1,14 @@
+[Unit]
+Description=monitoring-agent for linux
+After=syslog.target network.target
+
+[Service]
+Type=simple
+PIDFile=/var/run/monitoring-agent.pid
+ExecStart=/etc/init.d/monitoring-agent start
+ExecStop=/etc/init.d/monitoring-agent stop
+ExecRestart=/etc/init.d/monitoring-agent restart
+ExecStatus=/etc/init.d/monitoring-agent status
+
+[Install]
+WantedBy=multi-user.target

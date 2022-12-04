@@ -23,6 +23,24 @@ archives:
       windows: Windows
       386: i386
       amd64: x86_64
+nfpms:
+  - license: AGPL-3.0
+    maintainer: Dominik Robert <Dominik.Robert@Continentale.de>, Thorsten Eurich <Thorsten.Eurich@Continentale.de>
+    homepage: https://github.com/continentale/sma-monitoring-agent
+    formats:
+      - deb
+    contents:
+      - src: agent.ini
+        dst: /etc/sma-agent/agent.ini
+        type: config
+      - src: packaging/deb/monitoring-agent.initd
+        dst: /etc/init.d/monitoring-agent
+        type: config
+        packager: deb
+      - src: packaging/deb/monitoring-agent.service
+        dst: /etc/systemd/system/monitoring-agent.service
+        type: config
+        packager: deb
 checksum:
   name_template: 'checksums.txt'
 snapshot:
