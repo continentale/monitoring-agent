@@ -12,7 +12,7 @@
 # Description:       ...
 ### END INIT INFO
 
-conf="/etc/monitoring-agent/agent.ini"
+conf="/etc/monitoring-agent/config.toml"
 prog=monitoring-agent
 binary="/usr/bin/monitoring-agent"
 pidfile="/var/run/${prog}.pid"
