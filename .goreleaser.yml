@@ -13,9 +13,9 @@ builds:
       - darwin
     ldflags:
       - -s -w
-      - -X main.Version={{.Version}}
-      - -X main.BuildTime={{.Date}}
-      - -X main.GitHash={{.ShortCommit}}
+      - -X main.VERSION={{.Version}}
+      - -X main.BUILDDATE={{.Date}}
+      - -X main.GITCOMMIT={{.ShortCommit}}
 archives:
   - replacements:
       darwin: Darwin
@@ -23,10 +23,28 @@ archives:
       windows: Windows
       386: i386
       amd64: x86_64
+nfpms:
+  - license: AGPL-3.0
+    maintainer: Dominik Robert <Dominik.Robert@Continentale.de>, Thorsten Eurich <Thorsten.Eurich@Continentale.de>
+    homepage: https://github.com/continentale/monitoring-agent
+    formats:
+      - deb
+    contents:
+      - src: config.toml
+        dst: /etc/monitoring-agent/config.toml
+        type: config
+      - src: packaging/deb/monitoring-agent.initd
+        dst: /etc/init.d/monitoring-agent
+        type: config
+        packager: deb
+      - src: packaging/deb/monitoring-agent.service
+        dst: /etc/systemd/system/monitoring-agent.service
+        type: config
+        packager: deb
 checksum:
   name_template: 'checksums.txt'
 snapshot:
-  name_template: "{{ .Tag }}-next"
+  name_template: "{{ .Tag }}"
 changelog:
   sort: asc
   filters:
