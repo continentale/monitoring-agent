@@ -17,28 +17,33 @@ const (
 	FILTER_ENTRY_NOT          FilterEntryOperator = ":!"
 )
 
-func ApplyFilter(data []byte, filter string, endpoint string) []byte {
-	filterParts := strings.Split(filter, "||")
+func ApplyFilter(data []byte, filter []string, endpoint string) []byte {
 	gjsonData := gjson.ParseBytes(data)
 	result := make([]interface{}, 0)
+
 	// iterate over the output from the endpoint
 	for _, value := range gjsonData.Array() {
+		isAllMatching := true
+		isLastFilter := false
 		// iterate over all given filtered parts
-		for _, filterPart := range filterParts {
+		for i, filterPart := range filter {
+			// check if the given filter is the last one to guarantee that all filters are applied as true
+			if i == len(filter)-1 {
+				isLastFilter = true
+			}
+
 			// is regex search
 			if strings.Contains(filterPart, string(FILTER_ENTRY_REGEX)) {
 				fieldName := filterPart[:strings.IndexAny(filterPart, string(FILTER_ENTRY_REGEX))]
 				searchValue := filterPart[strings.IndexAny(filterPart, string(FILTER_ENTRY_REGEX))+2:]
 				pattern := regexp.MustCompile(searchValue)
 				if value.Get(fieldName).IsArray() {
-					for _, v := range value.Get(fieldName).Array() {
-						if v.String() == searchValue {
-							parseEndpoint(endpoint, value.Raw, &result)
-						}
+					if !matchRegexpArray(pattern, value.Get(fieldName).Array()) {
+						isAllMatching = false
 					}
 				} else {
-					if pattern.MatchString(value.Get(fieldName).Raw) {
-						parseEndpoint(endpoint, value.Raw, &result)
+					if !pattern.MatchString(value.Get(fieldName).Raw) {
+						isAllMatching = false
 					}
 				}
 			} else if strings.Contains(filterPart, string(FILTER_ENTRY_NEGATE_REGEX)) {
@@ -47,14 +52,12 @@ func ApplyFilter(data []byte, filter string, endpoint string) []byte {
 				pattern := regexp.MustCompile(searchValue)
 
 				if value.Get(fieldName).IsArray() {
-					for _, v := range value.Get(fieldName).Array() {
-						if v.String() == searchValue {
-							parseEndpoint(endpoint, value.Raw, &result)
-						}
+					if matchRegexpArray(pattern, value.Get(fieldName).Array()) {
+						isAllMatching = false
 					}
 				} else {
-					if !pattern.MatchString(value.Get(fieldName).String()) {
-						parseEndpoint(endpoint, value.Raw, &result)
+					if pattern.MatchString(value.Get(fieldName).String()) {
+						isAllMatching = false
 					}
 				}
 			} else if strings.Contains(filterPart, string(FILTER_ENTRY_NOT)) {
@@ -62,14 +65,12 @@ func ApplyFilter(data []byte, filter string, endpoint string) []byte {
 				fieldName := filterPart[:strings.IndexAny(filterPart, string(FILTER_ENTRY_NOT))]
 				searchValue := filterPart[strings.IndexAny(filterPart, string(FILTER_ENTRY_NOT))+2:]
 				if value.Get(fieldName).IsArray() {
-					for _, v := range value.Get(fieldName).Array() {
-						if v.String() == searchValue {
-							parseEndpoint(endpoint, value.Raw, &result)
-						}
+					if isInArray(searchValue, value.Get(fieldName).Array()) {
+						isAllMatching = false
 					}
 				} else {
 					if value.Get(fieldName).String() != searchValue {
-						parseEndpoint(endpoint, value.Raw, &result)
+						isAllMatching = false
 					}
 				}
 			} else { // match exact, but must be stand at the bottom
@@ -77,18 +78,21 @@ func ApplyFilter(data []byte, filter string, endpoint string) []byte {
 				searchValue := filterPart[strings.IndexAny(filterPart, string(FILTER_ENTRY_EXACT))+1:]
 
 				if value.Get(fieldName).IsArray() {
-					for _, v := range value.Get(fieldName).Array() {
-						if v.String() == searchValue {
-							parseEndpoint(endpoint, value.Raw, &result)
-						}
+					if !isInArray(searchValue, value.Get(fieldName).Array()) {
+						isAllMatching = false
 					}
 				} else {
-					if value.Get(fieldName).String() == searchValue {
-						parseEndpoint(endpoint, value.Raw, &result)
+					if value.Get(fieldName).String() != searchValue {
+						isAllMatching = false
 					}
 				}
-
 			}
+
+			// apply filter only if its the last filter and all previous ones are matching
+			if isAllMatching && isLastFilter {
+				parseEndpoint(endpoint, value.Raw, &result)
+			}
+
 		}
 	}
 
@@ -115,4 +119,22 @@ func parseProcs(data string) Procs {
 	var typeValue Procs
 	json.Unmarshal([]byte(data), &typeValue)
 	return typeValue
+}
+
+func isInArray(search string, field []gjson.Result) bool {
+	for _, v := range field {
+		if search == v.String() {
+			return true
+		}
+	}
+	return false
+}
+
+func matchRegexpArray(search *regexp.Regexp, field []gjson.Result) bool {
+	for _, v := range field {
+		if search.MatchString(v.String()) {
+			return true
+		}
+	}
+	return false
 }
