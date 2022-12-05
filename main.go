@@ -43,6 +43,8 @@ func main() {
 
 	r := gin.Default()
 
+	gin.SetMode(gin.ReleaseMode)
+
 	v2 := r.Group("/api/v2")
 
 	v2.Use(api.AuthorizationV2)

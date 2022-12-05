@@ -44,9 +44,13 @@ func GetProcs(c *gin.Context) {
 	}
 
 	jsonData, _ := json.Marshal(results)
-	filter := c.DefaultQuery("filter", viper.GetString("procs.filter"))
 
-	if filter != "." { // . is the default filter which means no filter at all
+	filter, ok := c.GetQueryArray("filter")
+	if !ok {
+		filter = append(filter, viper.GetString("procs.filter"))
+	}
+
+	if len(filter) > 1 || filter[0] != "." { // . is the default filter which means no filter at all
 		jsonData = types.ApplyFilter(jsonData, filter, "procs")
 	}
 
@@ -65,9 +69,12 @@ func GetDisk(c *gin.Context) {
 
 	jsonData, _ := json.Marshal(results)
 
-	filter := c.DefaultQuery("filter", viper.GetString("disks.filter"))
+	filter, ok := c.GetQueryArray("filter")
+	if !ok {
+		filter = append(filter, viper.GetString("disks.filter"))
+	}
 
-	if filter != "." { // . is the default filter which means no filter at all
+	if len(filter) > 1 || filter[0] != "." { // . is the default filter which means no filter at all
 		jsonData = types.ApplyFilter(jsonData, filter, "disks")
 	}
 
