@@ -1,6 +1,7 @@
 [server]
 # protocol for the webserver. Supported are http or https
 protocol = "http"
+timeouts = 10
 
 # if https is enabled that are the paths to the certificates
 certificate = "certificates/cert.crt"

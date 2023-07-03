@@ -15,6 +15,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
@@ -41,11 +43,11 @@ func main() {
 
 	viper.WatchConfig()
 
-	r := gin.Default()
+	router := gin.Default()
 
 	gin.SetMode(gin.ReleaseMode)
 
-	v2 := r.Group("/api/v2")
+	v2 := router.Group("/api/v2")
 
 	v2.Use(api.AuthorizationV2)
 
@@ -71,10 +73,26 @@ func main() {
 	v2.GET("exec", api.ExecCommand)
 
 	log.Println("Running Version:", VERSION, "with commit tag", GITCOMMIT, "build on", BUILDDATE)
+	log.Println("Running Timeouts:", viper.GetDuration("timeouts"))
+
+	listenAdress := viper.GetString("server.address")
+	if listenAdress == "" {
+		listenAdress, _ = os.Hostname()
+	}
+
+	s := &http.Server{
+		Addr:           ":20480",
+		Handler:        router,
+		ReadTimeout:    viper.GetDuration("timeouts") * time.Second,
+		WriteTimeout:   viper.GetDuration("timeouts") * time.Second,
+		MaxHeaderBytes: 1 << 20,
+	}
 
 	if viper.GetString("server.protocol") == "https" {
-		r.RunTLS(fmt.Sprintf("%s:%d", viper.GetString("server.address"), viper.GetInt("server.port")), viper.GetString("server.certificate"), viper.GetString("server.key"))
+		log.Println("Server listening on", "https://"+fmt.Sprintf("%s:%d", viper.GetString("server.address"), viper.GetInt("server.port")))
+		s.ListenAndServeTLS(viper.GetString("server.certificate"), viper.GetString("server.key"))
 	} else {
-		r.Run(fmt.Sprintf("%s:%d", viper.GetString("server.address"), viper.GetInt("server.port")))
+		log.Println("Server listening on", "http://"+fmt.Sprintf("%s:%d", listenAdress, viper.GetInt("server.port")))
+		s.ListenAndServe()
 	}
 }

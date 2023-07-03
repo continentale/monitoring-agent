@@ -10,7 +10,7 @@ import (
 func initConfig() {
 	prepareDefaultPaths()
 
-	viper.SetConfigName("config") // name of config file (without extension)
+	viper.SetConfigName("config")
 	viper.SetConfigType("toml")
 
 }
