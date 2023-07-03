@@ -16,13 +16,6 @@ builds:
       - -X main.VERSION={{.Version}}
       - -X main.BUILDDATE={{.Date}}
       - -X main.GITCOMMIT={{.ShortCommit}}
-archives:
-  - replacements:
-      darwin: Darwin
-      linux: Linux
-      windows: Windows
-      386: i386
-      amd64: x86_64
 nfpms:
   - license: AGPL-3.0
     maintainer: Dominik Robert <Dominik.Robert@Continentale.de>, Thorsten Eurich <Thorsten.Eurich@Continentale.de>
