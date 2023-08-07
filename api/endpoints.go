@@ -164,7 +164,8 @@ func ExecCommand(c *gin.Context) {
 	name := c.DefaultQuery("name", "")
 
 	if name == "" {
-		c.AbortWithError(http.StatusBadRequest, errors.New("name not defined"))
+		c.AbortWithError(http.StatusNotFound, errors.New("name not defined"))
+		return
 	}
 
 	commandPath := viper.GetString("exec.entries." + name)
@@ -172,7 +173,8 @@ func ExecCommand(c *gin.Context) {
 	if commandPath == "" {
 		commandPath = viper.GetString("exec.entries." + name + ".path")
 		if commandPath == "" {
-			c.AbortWithError(http.StatusNotFound, errors.New("command not defined"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("command not defined"))
+			return
 		}
 	}
 
