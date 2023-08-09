@@ -1,0 +1,49 @@
+server:
+  protocol: http
+  timeouts: 10
+  
+  secret: superSecretPassword
+  useSecret: false
+
+  certificate: certificates/cert.crt
+  key: certificates/priv.key
+
+  port: 20480
+  address: 0.0.0.0
+
+global:
+  timeStringFormat: "Mon Jan _2 15:04:05 MST 2006"
+
+endpoints:
+  version:
+    enabled: true
+  mem:
+    enabled: true
+  procs:
+    enabled: true
+  disks:
+    enabled: true
+  load:
+    enabled: true
+  time:
+    enabled: true
+  cpus:
+    enabled: true
+    perCPU: false
+  file:
+    enabled: true
+    entries:
+      - name: fsTab
+        path: /etc/fstab
+      - name: environment
+        path: /etc/environment
+        contentOnly: true
+  exec:
+    enabled: true
+    shell: /bin/bash
+    entries:
+      - name: file_tester
+        path: "-c ./scripts/echo"
+      - name: test
+        path: "./scripts/echo"
+        shell: "/usr/bin/python3"

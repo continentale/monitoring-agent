@@ -22,33 +22,33 @@ func InitCommon() {
 	// endpoint specific
 
 	// mem
-	viper.SetDefault("mem.enabled", true)
+	viper.SetDefault("endpoints.mem.enabled", true)
 
 	// procs
-	viper.SetDefault("procs.enabled", true)
-	viper.SetDefault("procs.filter", ".")
+	viper.SetDefault("endpoints.procs.enabled", true)
+	viper.SetDefault("endpoints.procs.filter", ".")
 
 	// disks
-	viper.SetDefault("disks.enabled", true)
-	viper.SetDefault("disks.filter", ".")
+	viper.SetDefault("endpoints.disks.enabled", true)
+	viper.SetDefault("endpoints.disks.filter", ".")
 
 	// load
-	viper.SetDefault("load.enabled", true)
+	viper.SetDefault("endpoints.load.enabled", true)
 
 	// time
-	viper.SetDefault("time.enabled", true)
+	viper.SetDefault("endpoints.time.enabled", true)
 
 	// cpus
-	viper.SetDefault("cpus.enabled", true)
-	viper.SetDefault("cpus.perCPU", true)
-	viper.SetDefault("cpus.filter", ".")
+	viper.SetDefault("endpoints.cpus.enabled", true)
+	viper.SetDefault("endpoints.cpus.perCPU", true)
+	viper.SetDefault("endpoints.cpus.filter", ".")
 
 	// file
-	viper.SetDefault("file.enabled", true)
+	viper.SetDefault("endpoints.file.enabled", false)
 
 	// exec
-	viper.SetDefault("exec.enabled", true)
+	viper.SetDefault("endpoints.exec.enabled", false)
 
 	// version
-	viper.SetDefault("version.enabled", true)
+	viper.SetDefault("endpoints.version.enabled", true)
 }

@@ -7,14 +7,14 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"strconv"
 	"strings"
 	"syscall"
 	"time"
 
+	"github.com/continentale/monitoring-agent/config"
 	"github.com/continentale/monitoring-agent/types"
+	"github.com/continentale/monitoring-agent/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/disk"
@@ -47,7 +47,7 @@ func GetProcs(c *gin.Context) {
 
 	filter, ok := c.GetQueryArray("filter")
 	if !ok {
-		filter = append(filter, viper.GetString("procs.filter"))
+		filter = append(filter, ".")
 	}
 
 	if len(filter) > 1 || filter[0] != "." { // . is the default filter which means no filter at all
@@ -71,7 +71,7 @@ func GetDisk(c *gin.Context) {
 
 	filter, ok := c.GetQueryArray("filter")
 	if !ok {
-		filter = append(filter, viper.GetString("disks.filter"))
+		filter = append(filter, ".")
 	}
 
 	if len(filter) > 1 || filter[0] != "." { // . is the default filter which means no filter at all
@@ -94,16 +94,15 @@ func GetTime(c *gin.Context) {
 	timeNow := time.Now()
 
 	result.Timestamp = timeNow.Unix()
-	result.Formatted = timeNow.Format(viper.GetString("global.timeStringFormat"))
+	result.Formatted = timeNow.Format(config.ConfigStruct.Global.TimeStringFormat)
 	c.Header("Content-Type", "application/json")
 	c.JSON(http.StatusOK, result)
 }
 
 func GetCPU(c *gin.Context) {
-	perCPU, _ := strconv.ParseBool(c.DefaultQuery("perCPU", viper.GetString("cpus.perCPU")))
-	cpus, _ := cpu.Times(perCPU)
+	cpus, _ := cpu.Times(config.ConfigStruct.Endpoints.Cpus.PerCPU)
 
-	usagesPercent, _ := cpu.Percent(time.Second, perCPU)
+	usagesPercent, _ := cpu.Percent(time.Second, config.ConfigStruct.Endpoints.Cpus.PerCPU)
 
 	result := make([]types.CPUS, len(cpus))
 
@@ -120,30 +119,29 @@ func ShowFile(c *gin.Context) {
 
 	if name == "" {
 		c.AbortWithError(http.StatusBadRequest, errors.New("name not defined"))
+		c.Data(http.StatusBadRequest, "text/html", []byte("name not defined"))
+		return
 	}
 
-	filePath := viper.GetString("file.entries." + name)
+	givenFile := utils.GetRightFile(name, config.ConfigStruct.Endpoints.File.Entries)
 
-	if filePath == "" {
-
-		filePath = viper.GetString("file.entries." + name + ".path")
-
-		if filePath == "" {
-			c.AbortWithError(http.StatusNotFound, errors.New("command not defined"))
-		}
+	if givenFile.Path == "" {
+		c.AbortWithError(http.StatusNotFound, errors.New("command not defined"))
+		c.Data(http.StatusBadRequest, "text/html", []byte("name not defined"))
+		return
 	}
 
-	if viper.GetBool("file.entries." + name + ".contentOnly") {
-		fileContent, _ := ioutil.ReadFile(filePath)
+	if givenFile.ContentOnly {
+		fileContent, _ := ioutil.ReadFile(givenFile.Path)
 		c.Data(http.StatusOK, "text/html; charset=UTF-8", fileContent)
 	} else {
-		file, _ := os.OpenFile(filePath, os.O_RDONLY, 0644)
+		file, _ := os.OpenFile(givenFile.Path, os.O_RDONLY, 0644)
 		stat, _ := file.Stat()
 
-		fileContent, _ := ioutil.ReadFile(filePath)
+		fileContent, _ := ioutil.ReadFile(givenFile.Path)
 
 		customFile := types.File{
-			Path:    filePath,
+			Path:    givenFile.Path,
 			IsDir:   stat.IsDir(),
 			ModTime: stat.ModTime().Unix(),
 			Mode:    stat.Mode().String(),
@@ -151,7 +149,6 @@ func ShowFile(c *gin.Context) {
 			Size:    stat.Size(),
 			Content: string(fileContent),
 		}
-
 		c.Header("Content-Type", "application/json")
 		c.JSON(http.StatusOK, customFile)
 	}
@@ -164,27 +161,26 @@ func ExecCommand(c *gin.Context) {
 	name := c.DefaultQuery("name", "")
 
 	if name == "" {
-		c.AbortWithError(http.StatusNotFound, errors.New("name not defined"))
+		c.AbortWithError(http.StatusBadRequest, errors.New("name not defined"))
+		c.Data(http.StatusBadRequest, "text/html", []byte("name not defined"))
 		return
 	}
 
-	commandPath := viper.GetString("exec.entries." + name)
+	command := utils.GetRightExec(name, config.ConfigStruct.Endpoints.Exec.Entries)
 
-	if commandPath == "" {
-		commandPath = viper.GetString("exec.entries." + name + ".path")
-		if commandPath == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("command not defined"))
-			return
-		}
+	if command == nil {
+		c.AbortWithError(http.StatusBadRequest, errors.New("command not defined"))
+		c.Data(http.StatusBadRequest, "text/html", []byte("command not defined"))
+		return
 	}
 
-	path := viper.GetString("exec.entries." + name + ".shell")
-	if path == "" {
-		// the default is not overwritten
-		path = viper.GetString("exec.shell")
+	commandShell := command.Shell
+
+	if commandShell == "" {
+		commandShell = config.ConfigStruct.Endpoints.Exec.Shell
 	}
 
-	cmd := exec.Command(path, strings.Fields(commandPath)...)
+	cmd := exec.Command(commandShell, strings.Fields(command.Path)...)
 
 	out, err := cmd.CombinedOutput()
 

@@ -22,6 +22,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/continentale/monitoring-agent/api"
+	"github.com/continentale/monitoring-agent/config"
 	"github.com/continentale/monitoring-agent/paths"
 	"github.com/continentale/monitoring-agent/types"
 )
@@ -36,15 +37,11 @@ var (
 )
 
 func main() {
-	initConfig()
 	paths.InitCommon()
 	paths.InitOSSpecific()
-	viper.ReadInConfig()
-
-	viper.WatchConfig()
+	config.InitConfig()
 
 	router := gin.Default()
-
 	gin.SetMode(gin.ReleaseMode)
 
 	v2 := router.Group("/api/v2")
@@ -75,7 +72,7 @@ func main() {
 	log.Println("Running Version:", VERSION, "with commit tag", GITCOMMIT, "build on", BUILDDATE)
 	log.Println("Running Timeouts:", viper.GetDuration("timeouts"))
 
-	listenAdress := viper.GetString("server.address")
+	listenAdress := config.ConfigStruct.Server.Address
 	if listenAdress == "" {
 		listenAdress, _ = os.Hostname()
 	}
@@ -83,16 +80,16 @@ func main() {
 	s := &http.Server{
 		Addr:           ":20480",
 		Handler:        router,
-		ReadTimeout:    viper.GetDuration("timeouts") * time.Second,
-		WriteTimeout:   viper.GetDuration("timeouts") * time.Second,
+		ReadTimeout:    time.Duration(config.ConfigStruct.Server.Timeouts) * time.Second,
+		WriteTimeout:   time.Duration(config.ConfigStruct.Server.Timeouts) * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	if viper.GetString("server.protocol") == "https" {
-		log.Println("Server listening on", "https://"+fmt.Sprintf("%s:%d", viper.GetString("server.address"), viper.GetInt("server.port")))
-		s.ListenAndServeTLS(viper.GetString("server.certificate"), viper.GetString("server.key"))
+	if config.ConfigStruct.Server.Protocol == "https" {
+		log.Println("Server listening on", "https://"+fmt.Sprintf("%s:%d", listenAdress, config.ConfigStruct.Server.Port))
+		s.ListenAndServeTLS(config.ConfigStruct.Server.Certificate, config.ConfigStruct.Server.Key)
 	} else {
-		log.Println("Server listening on", "http://"+fmt.Sprintf("%s:%d", listenAdress, viper.GetInt("server.port")))
+		log.Println("Server listening on", "http://"+fmt.Sprintf("%s:%d", listenAdress, config.ConfigStruct.Server.Port))
 		s.ListenAndServe()
 	}
 }
