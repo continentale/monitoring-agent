@@ -13,7 +13,6 @@ import (
 
 	"github.com/continentale/monitoring-agent/config"
 	"github.com/continentale/monitoring-agent/types"
-	"github.com/continentale/monitoring-agent/utils"
 	"github.com/gin-gonic/gin"
 
 	"github.com/shirou/gopsutil/v3/cpu"
@@ -123,9 +122,9 @@ func ShowFile(c *gin.Context) {
 		return
 	}
 
-	givenFile := utils.GetRightFile(name, config.ConfigStruct.Endpoints.File.Entries)
+	givenFile, exists := config.ConfigStruct.Endpoints.File.Entries[name]
 
-	if givenFile.Path == "" {
+	if !exists {
 		c.AbortWithError(http.StatusNotFound, errors.New("command not defined"))
 		c.Data(http.StatusBadRequest, "text/html", []byte("name not defined"))
 		return
@@ -166,9 +165,9 @@ func ExecCommand(c *gin.Context) {
 		return
 	}
 
-	command := utils.GetRightExec(name, config.ConfigStruct.Endpoints.Exec.Entries)
+	command, exists := config.ConfigStruct.Endpoints.Exec.Entries[name]
 
-	if command == nil {
+	if !exists {
 		c.AbortWithError(http.StatusBadRequest, errors.New("command not defined"))
 		c.Data(http.StatusBadRequest, "text/html", []byte("command not defined"))
 		return

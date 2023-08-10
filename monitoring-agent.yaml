@@ -33,17 +33,19 @@ endpoints:
   file:
     enabled: true
     entries:
-      - name: fsTab
+      fstab:
         path: /etc/fstab
-      - name: environment
+      environment:
         path: /etc/environment
         contentOnly: true
   exec:
     enabled: true
     shell: /bin/bash
     entries:
-      - name: file_tester
+      etcd:
+        path: "-c /opt/sma-agent/etcd.py"
+      file_tester:
         path: "-c ./scripts/echo"
-      - name: test
+      test:
         path: "./scripts/echo"
         shell: "/usr/bin/python3"

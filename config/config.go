@@ -48,24 +48,22 @@ type Cpus struct {
 	PerCPU  bool `mapstructure:"perCPU"`
 }
 type FileEntries struct {
-	Name        string `mapstructure:"name"`
 	Path        string `mapstructure:"path"`
 	ContentOnly bool   `yaml:"contentOnly,omitempty" mapstructure:"contentOnly"`
 }
 type File struct {
-	Enabled bool          `mapstructure:"enabled"`
-	Entries []FileEntries `mapstructure:"entries"`
+	Enabled bool                   `mapstructure:"enabled"`
+	Entries map[string]FileEntries `mapstructure:"entries"`
 }
 type ExecEntries struct {
-	Name  string `mapstructure:"name"`
 	Path  string `mapstructure:"path"`
 	Shell string `yaml:"shell,omitempty" mapstructure:"shell"`
 }
 type Exec struct {
-	Enabled bool          `mapstructure:"enabled"`
-	Shell   string        `mapstructure:"shell"`
-	Path    string        `mapstructure:"path"`
-	Entries []ExecEntries `mapstructure:"entries"`
+	Enabled bool                   `mapstructure:"enabled"`
+	Shell   string                 `mapstructure:"shell"`
+	Path    string                 `mapstructure:"path"`
+	Entries map[string]ExecEntries `mapstructure:"entries"`
 }
 type Endpoints struct {
 	Version Version `mapstructure:"version"`

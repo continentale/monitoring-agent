@@ -23,8 +23,8 @@ nfpms:
     formats:
       - deb
     contents:
-      - src: config.toml
-        dst: /etc/monitoring-agent/config.toml
+      - src: monitoring-agent.yaml
+        dst: /etc/monitoring-agent/monitoring-agent.yaml
         type: config
       - src: packaging/deb/monitoring-agent.initd
         dst: /etc/init.d/monitoring-agent
