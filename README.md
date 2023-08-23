@@ -1,6 +1,6 @@
 # monitoring-agent
 
-The monitoring agent is an mulit platform web api for monitoring. It has predefined endpoints to support default monitoring and provides a way to execute user defined scripts for a more precise monitoring
+The monitoring agent is an multi platform web api for monitoring. It has predefined endpoints to support default monitoring and provides a way to execute user defined scripts for a more precise monitoring
 The counterpart (the check for nagios) is published here: https://github.com/continentale/monitoring-agent-check
 
 # installation
@@ -256,7 +256,7 @@ output
 
 ### the file endpoint
 
-the file endpoint needs a special config. This config prevents users to read any data they want, so you must make the file accesible.
+the file endpoint needs a special config. This config prevents users to read any data they want, so you must make the file accessible.
 
 For this you have to go in the file section and enable the endpoint with
 
@@ -291,7 +291,7 @@ the exec endpoint needs a special config too to prevent the user exec all files 
 
 to begin with a exec endpoint you should enable it:
 
-the file endpoint needs a special config. This config prevents users to read any data they want, so you must make the file accesible.
+the file endpoint needs a special config. This config prevents users to read any data they want, so you must make the file accessible.
 
 For this you have to go in the file section and enable the endpoint with
 
@@ -304,7 +304,7 @@ shell = "/bin/bash"
 here you can define a shell if you want in where the file gets executed. If you leave it empty the default will be taken (windows: cmd | linux: /bin/bash)
 
 Then you define a name for your command to reference it in the agent and specify the path to file
-If you want to define the entrie directly you can do that by setting a path to your script in the section
+If you want to define the entry directly you can do that by setting a path to your script in the section
 
 full example:
 
